@@ -61,11 +61,13 @@ distances between each pair of cities, what is the shortest possible route that
 visits each city and returns to the origin city?" If the TSP had multiple
 salesmen, (as in the Vehicle Routing Problem\cite{VRP}, VRP), we'd need to figure out a route for each driver so that they visit every job, and return to the home base at the end of the day. 
 
-The parallels are obvious, however, the biggest problem with the TSP and the VRP is that they are both NP-Complete, which makes them computationally infeasible to find optimal solutions for. To solve these problems requires heuristic methods, which can still be computationally expensive, and will almost certainly not give an optimal solution.
+The parallels are obvious, however, the biggest problem with the TSP and the VRP
+is that they are both NP-Hard, which makes them computationally infeasible to
+find optimal solutions for. To solve these problems quickly requires heuristic methods, which can still be computationally expensive, and will almost certainly not give an optimal solution.
 
 Our approach doesn't depend very much on known algorithms, outside of one, the
 Hungarian Algorithm\cite{hungarian}, which is a polynomial time algorithm ($O(n^3)$) that
-generates an optimal solution to an assignment problem\cite{hungarian} In our
+generates an optimal solution to an assignment problem\cite{hungarian}. In our
 application, we want to pair up deliveries and pickups so that the total route
 cost (over all drivers) is minimized.
 
@@ -76,11 +78,14 @@ effects the cost of the route. Here, we know that for the most part, order doesn
 matter. This is because of how frequently storage yards and landfills are
 visited.
 
+Note: since for each storage yard there is a nearby landfill, we will refer
+exclusively to the storage yard.
+
 \subsection{Stars}
 If customers only ever wanted container switches, the problem would be much
 simpler. Where should the truck come from that's going to deliver the new
 container? The nearest storage yard. And where should the truck go after picking up
-the full container? The nearest storage yard.
+the full container? The nearest landfill.
 
 These choices fulfill a kind of local
 optimality, however, they may not lead to a solution which is possible.
@@ -91,9 +96,9 @@ be the one to do that job? These extra factors will be fixed after the fact,
 since most of the day is spent working in these locally optimal situations. 
 
 Filling the route with this data, we
-end up with several \emph{stars}, each landfill being a center, and the points
+end up with several \emph{stars}, each storage yard being a center, and the points
 surrounding it being the job sites. To service each star, you can take the jobs
-in any order, the resulting cost will be the same. This will give us a lot of
+in any order, or with any driver, the resulting cost will be the same. This will give us a lot of
 leniency when trying to satisfy the constraints. The only task remaining is to
 sew them together into routes for the drivers.
 
@@ -105,7 +110,8 @@ Blue dots are storage yards, green dots are pickups, red dots are deliveries.\\
 
 \subsection{Triangles}
 Since the problem doesn't actually consist solely of switches it is necessary to
-expand the star solution to include pickups and drop-offs. This provides a route of landfill, drop-off, pick-up, landfill for a driver, creating a triangle. These triangle routes allow for further optimization as long as the optimal triangles are chosen.
+expand the star solution to include pickups and drop-offs. This provides a route
+of storage yard, drop-off, pick-up, storage yard for a driver, creating a triangle. These triangle routes allow for further optimization as long as the optimal triangles are chosen.
 
 \begin{center}
 \includegraphics[width=5cm]{small_ex_star.png}\\
@@ -133,7 +139,7 @@ as a star, and what they would cost together as a triangle. Minimizing this
 maximizes the ``benefit" of the triangles over the stars, which is exactly what
 we want.
 
-We allow for pairs to cross between landfill zones, that is, the delivery has
+We allow for pairs to cross between storage yard zones, that is, the delivery has
 one closest storage yard and the pickup can have a different closest storage
 yard. In a matching where this is allowed, the result is almost always better than
 restricting pairs to the same zone. One unfortunate consequence is that the
@@ -151,7 +157,14 @@ allocate the jobs to the drivers in a reasonable way. For this, there are three
 considerations, how do we move drivers between storage yard zones? (transitions), how do we satisfy truck and time of day constraints? And how do we manage the supply of cans among the storage yards?
 
 \subsubsection{Transitions}
-In order to determine each transition, we calculate $\min (RN_i - RT_i)$ for $i=0$ to $i=n$ where $RN$ is the route cost normally, $RT$ is the cost of doing the transition, and $n$ is the number of job pairs that have not been assigned to a driver. In the case where pairs are constrained $\min(RN_i - RT_i)$ will always be positive since one of the two endpoints is no longer to the closest landfill. However in the case where pairs are non-constrained and can be made between zones the cost of doing a job pair normally can be greater than the cost of doing a transition since the pair can have different landfills that are closest. 
+In order to determine each transition, we calculate $\min (RN_i - RT_i)$ for
+$i=0$ to $i=n$ where $RN$ is the route cost normally, $RT$ is the cost of doing
+the transition, and $n$ is the number of job pairs that have not been assigned
+to a driver. In the case where pairs are constrained $\min(RN_i - RT_i)$ will
+always be positive since one of the two endpoints is no longer to the closest
+storage yard. However in the case where pairs are non-constrained and can be
+made between zones the cost of doing a job pair normally can be greater than the
+cost of doing a transition since the pair can have different storage yards that are closest. 
 
 \subsubsection{Non Transition Routes}
 Non-transition routes are first assigned to fulfill constraints, second to match the size of the can the driver just picked to the size of can to be delivered next and are assigned in descending order based on their distance to the main hub of the company.
