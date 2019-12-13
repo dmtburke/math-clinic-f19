@@ -75,8 +75,8 @@ fullday = 300
 current_landfill = 3
 # end variables to change
 
-# with open('../data/sample1/jobs.csv', 'rb') as f:
-with open('jobs.csv', 'rb') as f:
+with open('../data/sample1/jobs.csv', 'rb') as f:
+#with open('jobs.csv', 'rb') as f:
     data = [line[:-1].decode('utf-8').split(',') for line in f][1:]
 
 landfills = [Landfill.from_csv(l) for l in data if l[6] == "S"]

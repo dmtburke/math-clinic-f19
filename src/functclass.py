@@ -3,7 +3,7 @@ from munkres import Munkres
 import matplotlib.pyplot as plt
 
 
-with open('minutes.csv', 'rb') as f:
+with open('../data/sample1/minutes.csv', 'rb') as f:
     # ignore last character of line (always '\n'), decode bytestring to string,
     # split strings on ',' into list, ignore first element of that list (deleting first column),
     # convert elements of the list to floats, then ignore the first row
